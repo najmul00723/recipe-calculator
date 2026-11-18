@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#d35400">
+    <title>মিষ্টি টক রেসিপি ক্যালকুলেটর</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap');
+
+        :root {
+            --primary-color: #d35400;
+            --primary-dark: #a84300;
+            --secondary-color: #e67e22;
+            --bg-color: #fdf2e9;
+            --text-color: #2c3e50;
+            --card-bg: #ffffff;
+            --muted: #7f8c8d;
+            --border: #e6d5c5;
+            --row-alt: #fdf8f3;
+            --note-bg: #fff3e0;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Tiro Bangla', 'Noto Serif Bengali', 'Kalpurush', 'SolaimanLipi', serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 2.2em;
+            margin: 0 0 20px;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        label { font-size: 1.2em; font-weight: bold; }
+
+        select, input, button {
+            font-family: inherit;
+            font-size: 1.1em;
+        }
+
+        select, input[type="number"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            outline: none;
+            background: #fff;
+            color: var(--text-color);
+        }
+
+        select:focus, input:focus, button:focus-visible {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(211, 84, 0, 0.25);
+            outline: none;
+        }
+
+        .input-row { display: flex; gap: 8px; align-items: stretch; }
+        .input-row input { flex: 1; min-width: 0; text-align: center; font-weight: bold; }
+        .input-row select { width: 110px; }
+
+        .step-btn {
+            width: 48px;
+            border: none;
+            border-radius: 8px;
+            background: var(--secondary-color);
+            color: #fff;
+            font-size: 1.5em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background .15s, transform .05s;
+        }
+        .step-btn:hover { background: var(--primary-color); }
+        .step-btn:active { transform: scale(0.94); }
+
+        .presets { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chip {
+            border: 1px solid var(--secondary-color);
+            background: #fff;
+            color: var(--primary-color);
+            padding: 5px 14px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all .15s;
+        }
+        .chip:hover { background: var(--note-bg); }
+        .chip.active { background: var(--primary-color); border-color: var(--primary-color); color: #fff; }
+
+        .summary {
+            background: var(--note-bg);
+            border-radius: 8px;
+            padding: 10px 14px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        .summary b { color: var(--primary-color); }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 25px;
+        }
+        .section-head h2 { margin: 0; color: var(--primary-color); font-size: 1.4em; }
+        .hint { color: var(--muted); font-size: .9em; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td { border: 1px solid var(--border); padding: 11px 12px; text-align: left; }
+        th { background-color: var(--primary-color); color: white; }
+        tbody tr:nth-child(even) { background-color: var(--row-alt); }
+        tbody tr { cursor: pointer; transition: background .15s; }
+        tbody tr:hover { background: var(--note-bg); }
+        td.amount { font-weight: bold; color: var(--primary-dark); white-space: nowrap; }
+        td.check { width: 42px; text-align: center; padding: 0; }
+        th.check-h { width: 42px; }
+        tr.main-row td { background: #fff7ee; font-weight: bold; }
+        tr.done td:not(.check) { text-decoration: line-through; color: #aaa; }
+        tr.done td.amount { color: #bbb; }
+
+        input[type="checkbox"] {
+            width: 20px; height: 20px;
+            accent-color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+        .btn {
+            flex: 1 1 140px;
+            padding: 11px 14px;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary-color);
+            color: #fff;
+            cursor: pointer;
+            transition: background .15s;
+        }
+        .btn:hover { background: var(--primary-dark); }
+        .btn.secondary { background: #fff; color: var(--primary-color); border: 1px solid var(--primary-color); }
+        .btn.secondary:hover { background: var(--note-bg); }
+        .btn.whatsapp { background: #25d366; }
+        .btn.whatsapp:hover { background: #1da851; }
+
+        .instructions {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: var(--note-bg);
+            border-left: 5px solid var(--primary-color);
+            border-radius: 6px;
+        }
+        .instructions h2 { margin: 0; }
+        .instructions ol { padding-left: 0; list-style: none; counter-reset: step; font-size: 1.1em; margin: 12px 0 0; }
+        .instructions li {
+            counter-increment: step;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding: 8px 10px;
+            background: rgba(255,255,255,.6);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .instructions li::before {
+            content: counter(step, bengali);
+            flex: none;
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .95em;
+        }
+        .instructions li.done span { text-decoration: line-through; color: #999; }
+        .instructions li.done::before { background: #999; }
+        .instructions li span { flex: 1; }
+
+        .toast {
+            position: fixed;
+            bottom: 24px; left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #2c3e50;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 999px;
+            opacity: 0;
+            transition: all .3s;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .container { padding: 15px; }
+            h1 { font-size: 1.7em; }
+            th, td { padding: 9px 8px; font-size: .98em; }
+        }
+
+        @media print {
+            body { background: #fff; padding: 0; }
+            .container { box-shadow: none; max-width: 100%; padding: 0; }
+            .step-btn, .presets, .actions, .toast, .hint, .check, .check-h { display: none !important; }
+            .control-group select, .control-group input { border: none; }
+            tbody tr { cursor: default; }
+        }
+    </style>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>🍯 মিষ্টি টক রেসিপি ক্যালকুলেটর</h1>
+
+        <div class="control-group">
+            <label for="recipe-type">রেসিপির ধরন নির্বাচন করুন:</label>
+            <select id="recipe-type">
+                <option value="special">স্পেশাল মিষ্টি টক (বেশি উপাদানের)</option>
+                <option value="normal">নরমাল মিষ্টি টক (কম উপাদানের)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label for="tamarind-input">মূল উপাদান: তেঁতুলের পরিমাণ দিন:</label>
+            <div class="input-row">
+                <button type="button" class="step-btn" id="minus-btn" aria-label="কমান">−</button>
+                <input type="number" id="tamarind-input" value="1.5" step="0.1" min="0.1" inputmode="decimal" placeholder="পরিমাণ লিখুন">
+                <button type="button" class="step-btn" id="plus-btn" aria-label="বাড়ান">+</button>
+                <select id="input-unit" aria-label="একক">
+                    <option value="kg">কেজি</option>
+                    <option value="g">গ্রাম</option>
+                </select>
+            </div>
+            <div class="presets" id="presets" aria-label="দ্রুত পরিমাণ"></div>
+        </div>
+
+        <div class="summary" id="summary"></div>
+
+        <div class="section-head">
+            <h2>উপাদানের তালিকা</h2>
+            <span class="hint">সংগ্রহ হলে সারিতে ট্যাপ করে টিক দিন</span>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th class="check-h"></th>
+                    <th>উপাদান</th>
+                    <th>পরিমাণ</th>
+                </tr>
+            </thead>
+            <tbody id="ingredient-list"></tbody>
+        </table>
+
+        <div class="actions">
+            <button type="button" class="btn" id="copy-btn">📋 তালিকা কপি করুন</button>
+            <button type="button" class="btn whatsapp" id="wa-btn">💬 হোয়াটসঅ্যাপে পাঠান</button>
+            <button type="button" class="btn secondary" id="print-btn">🖨️ প্রিন্ট করুন</button>
+            <button type="button" class="btn secondary" id="reset-btn">↺ টিক মুছুন</button>
+        </div>
+
+        <div class="instructions" id="instructions-container">
+            <div class="section-head" style="margin-top:0">
+                <h2>প্রস্তুত প্রণালী</h2>
+                <span class="hint">ধাপ শেষ হলে ট্যাপ করুন</span>
+            </div>
+            <ol id="instruction-steps"></ol>
+        </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+        const recipes = {
+            special: {
+                referenceKg: 1.5, // ভিডিও অনুযায়ী ১.৫ কেজি তেঁতুলের মাপ
+                ingredients: [
+                    { name: 'পানি', amount: 5, unit: 'L' },
+                    { name: 'বিট লবণ', amount: 60, unit: 'g' },
+                    { name: 'সাদা লবণ (স্বাদমতো)', amount: 20, unit: 'g' },
+                    { name: 'জিরার গুঁড়া', amount: 45, unit: 'g' },
+                    { name: 'বোম্বাই মরিচ', amount: 3, unit: 'pcs' },
+                    { name: 'চাট মশলা (নিজস্ব)', amount: 90, unit: 'g' },
+                    { name: 'রাঁধুনি পাঁচফোড়ন গুঁড়া', amount: 60, unit: 'g' },
+                    { name: 'রাঁধুনি চটপটি মশলা', amount: 75, unit: 'g' },
+                    { name: 'সস (প্রাণ/টমেটো)', amount: 200, unit: 'g' },
+                    { name: 'চিলি ফ্লেক্স', amount: 30, unit: 'g' },
+                    { name: 'গুড় বা মিঠাই', amount: 400, unit: 'g' },
+                    { name: 'চিনি', amount: 1000, unit: 'g' },
+                    { name: 'ভিনেগার', amount: 50, unit: 'ml' }
+                ],
+                instructions: [
+                    "তেঁতুল পানির সাথে ৩০ মিনিট ভিজিয়ে রাখুন।",
+                    "আধা ঘন্টা পর তেঁতুল ভালো করে কচলিয়ে ছেঁকে এর পানি বা মাড় আলাদা করে নিন।",
+                    "ছেঁকে নেওয়া তেঁতুলের পানির সাথে বিট লবণ, সাদা লবণ, জিরার গুঁড়া, কুচি করা বোম্বাই মরিচ, চাট মশলা, পাঁচফোড়ন গুঁড়া, চটপটি মশলা, সস, চিলি ফ্লেক্স এবং গুড় ভালোভাবে মিশিয়ে নিন।",
+                    "মিশ্রণটি চুলায় বসিয়ে দিন।",
+                    "চুলায় বসানোর পর চিনি দিয়ে দিন।",
+                    "বলক আসার পর সংরক্ষণের জন্য পরিমাণমতো ভিনেগার দিয়ে দিন।",
+                    "বলক আসার ১০-১৫ মিনিট পর চুলা বন্ধ করে দিন। ঠান্ডা হলে এটি আরও ঘন হবে।"
+                ]
+            },
+            normal: {
+                referenceKg: 1, // ভিডিও অনুযায়ী ১ কেজি তেঁতুলের মাপ
+                ingredients: [
+                    { name: 'পানি', amount: 4, unit: 'L' },
+                    { name: 'গুঁড়া মরিচ', amount: 50, unit: 'g' },
+                    { name: 'স্পেশাল মশলা (ধনিয়া, জিরা, দারুচিনি, গোলমরিচ)', amount: 100, unit: 'g' },
+                    { name: 'খাবার লবণ (স্বাদমতো)', amount: 20, unit: 'g' },
+                    { name: 'চিনি', amount: 1500, unit: 'g' },
+                    { name: 'ভিনেগার (সংরক্ষণের জন্য)', amount: 50, unit: 'ml' }
+                ],
+                instructions: [
+                    "তেঁতুল পানির সাথে ভালোভাবে কচলিয়ে ধুয়ে নিন যেন তেঁতুলের গায়ে কোনো মাংস না থাকে।",
+                    "ঝুড়ি বা ছাঁকনির সাহায্যে তেঁতুলের পানি দুইবার ভালোভাবে ছেঁকে নিন যাতে কোনো বিচি না থাকে।",
+                    "ছেঁকে নেওয়া পানি সরাসরি চুলায় দিয়ে গরম করে নিন।",
+                    "পানি গরম হওয়ার পর এতে গুঁড়া মরিচ এবং স্পেশাল মশলা দিয়ে দিন।",
+                    "স্বাদমতো খাবার লবণ যোগ করুন।",
+                    "পুরো চিনি দিয়ে ভালোভাবে নেড়ে মিশিয়ে নিন (কোনোভাবেই স্যাকারিন ব্যবহার করবেন না)।",
+                    "কয়েকদিন ভালো রাখার জন্য ভিনেগার দিয়ে দিন এবং ভালোভাবে মিশে গেলে নামিয়ে ঠান্ডা করে পরিবেশন করুন।"
+                ]
+            }
+        };
+
+        const PRESETS_KG = [0.5, 1, 1.5, 2, 3, 5];
+        const STORE_KEY = 'mishti-tok-calc-v2';
+
+        const recipeTypeSelect = document.getElementById('recipe-type');
+        const tamarindInput = document.getElementById('tamarind-input');
+        const inputUnitSelect = document.getElementById('input-unit');
+        const ingredientList = document.getElementById('ingredient-list');
+        const instructionSteps = document.getElementById('instruction-steps');
+        const presetsBox = document.getElementById('presets');
+        const summaryBox = document.getElementById('summary');
+        const toastEl = document.getElementById('toast');
+
+        // রেসিপি অনুযায়ী টিক চিহ্নের অবস্থা (পেজ খোলা থাকা পর্যন্ত মনে রাখে)
+        const ticks = { special: { ing: {}, step: {} }, normal: { ing: {}, step: {} } };
+
+        const bn = new Intl.NumberFormat('bn-BD', { maximumFractionDigits: 2 });
+        const num = n => bn.format(n);
+
+        function formatAmount(amount, unit) {
+            if (unit === 'g') {
+                if (amount >= 1000) return num(amount / 1000) + ' কেজি';
+                if (amount < 10) return num(Math.round(amount * 10) / 10) + ' গ্রাম';
+                return num(Math.round(amount)) + ' গ্রাম';
+            } else if (unit === 'L') {
+                return num(amount) + ' লিটার';
+            } else if (unit === 'ml') {
+                if (amount >= 1000) return num(amount / 1000) + ' লিটার';
+                return num(Math.round(amount)) + ' মিলি.লি.';
+            } else if (unit === 'pcs') {
+                // আধা পিস পর্যন্ত নির্ভুলতা, কমপক্ষে আধা
+                const v = Math.max(0.5, Math.round(amount * 2) / 2);
+                return num(v) + ' টি';
+            }
+            return num(amount) + ' ' + unit;
+        }
+
+        function getTamarindKg() {
+            const v = parseFloat(tamarindInput.value);
+            if (!isFinite(v) || v <= 0) return 0;
+            return inputUnitSelect.value === 'g' ? v / 1000 : v;
+        }
+
+        function tamarindLabel(kg) {
+            return kg >= 1 ? num(kg) + ' কেজি' : num(Math.round(kg * 1000)) + ' গ্রাম';
+        }
+
+        function save() {
+            try {
+                localStorage.setItem(STORE_KEY, JSON.stringify({
+                    type: recipeTypeSelect.value,
+                    amount: tamarindInput.value,
+                    unit: inputUnitSelect.value
+                }));
+            } catch (e) {}
+        }
+
+        function load() {
+            try {
+                const s = JSON.parse(localStorage.getItem(STORE_KEY));
+                if (!s) return;
+                if (recipes[s.type]) recipeTypeSelect.value = s.type;
+                if (s.unit === 'kg' || s.unit === 'g') inputUnitSelect.value = s.unit;
+                if (s.amount && parseFloat(s.amount) > 0) tamarindInput.value = s.amount;
+            } catch (e) {}
+        }
+
+        function buildPresets() {
+            presetsBox.innerHTML = '';
+            PRESETS_KG.forEach(kg => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'chip';
+                b.dataset.kg = kg;
+                b.textContent = tamarindLabel(kg);
+                b.addEventListener('click', () => {
+                    inputUnitSelect.value = 'kg';
+                    tamarindInput.value = kg;
+                    calculateRecipe();
+                });
+                presetsBox.appendChild(b);
+            });
+        }
+
+        function markPresets(kg) {
+            presetsBox.querySelectorAll('.chip').forEach(c => {
+                c.classList.toggle('active', Math.abs(parseFloat(c.dataset.kg) - kg) < 1e-9);
+            });
+        }
+
+        function getRows() {
+            const type = recipeTypeSelect.value;
+            const r = recipes[type];
+            const kg = getTamarindKg();
+            const mult = kg / r.referenceKg;
+            const rows = [{ name: 'তেঁতুল (মূল উপাদান)', text: kg > 0 ? tamarindLabel(kg) : '—', main: true }];
+            r.ingredients.forEach(item => {
+                rows.push({ name: item.name, text: kg > 0 ? formatAmount(item.amount * mult, item.unit) : '—' });
+            });
+            return rows;
+        }
+
+        function calculateRecipe() {
+            const type = recipeTypeSelect.value;
+            const r = recipes[type];
+            const kg = getTamarindKg();
+
+            markPresets(kg);
+            summaryBox.innerHTML = kg > 0
+                ? `<b>${tamarindLabel(kg)}</b> তেঁতুলের জন্য হিসাব <small>(মূল রেসিপি: ${tamarindLabel(r.referenceKg)} এর মাপ)</small>`
+                : 'সঠিক পরিমাণ লিখুন (০ এর বেশি)';
+
+            // উপাদান টেবিল
+            ingredientList.innerHTML = '';
+            getRows().forEach((row, i) => {
+                const tr = document.createElement('tr');
+                if (row.main) tr.classList.add('main-row');
+                if (ticks[type].ing[i]) tr.classList.add('done');
+
+                const tdC = document.createElement('td');
+                tdC.className = 'check';
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.checked = !!ticks[type].ing[i];
+                cb.setAttribute('aria-label', row.name + ' সংগ্রহ হয়েছে');
+                tdC.appendChild(cb);
+
+                const tdName = document.createElement('td');
+                tdName.textContent = row.name;
+
+                const tdAmount = document.createElement('td');
+                tdAmount.className = 'amount';
+                tdAmount.textContent = row.text;
+
+                tr.append(tdC, tdName, tdAmount);
+
+                const toggle = () => {
+                    ticks[type].ing[i] = !ticks[type].ing[i];
+                    tr.classList.toggle('done', ticks[type].ing[i]);
+                    cb.checked = ticks[type].ing[i];
+                };
+                tr.addEventListener('click', e => { if (e.target !== cb) toggle(); });
+                cb.addEventListener('change', toggle);
+
+                ingredientList.appendChild(tr);
+            });
+
+            // প্রস্তুত প্রণালী
+            instructionSteps.innerHTML = '';
+            r.instructions.forEach((step, i) => {
+                const li = document.createElement('li');
+                if (ticks[type].step[i]) li.classList.add('done');
+                const sp = document.createElement('span');
+                sp.textContent = step;
+                li.appendChild(sp);
+                li.addEventListener('click', () => {
+                    ticks[type].step[i] = !ticks[type].step[i];
+                    li.classList.toggle('done', ticks[type].step[i]);
+                });
+                instructionSteps.appendChild(li);
+            });
+
+            save();
+        }
+
+        function buildText() {
+            const type = recipeTypeSelect.value;
+            const title = type === 'special' ? 'স্পেশাল মিষ্টি টক' : 'নরমাল মিষ্টি টক';
+            const kg = getTamarindKg();
+            let t = `🍯 ${title} — ${tamarindLabel(kg)} তেঁতুলের জন্য\n\n`;
+            getRows().forEach(r => { t += `• ${r.name}: ${r.text}\n`; });
+            return t.trim();
+        }
+
+        function toast(msg) {
+            toastEl.textContent = msg;
+            toastEl.classList.add('show');
+            clearTimeout(toast._t);
+            toast._t = setTimeout(() => toastEl.classList.remove('show'), 2000);
+        }
+
+        async function copyList() {
+            const text = buildText();
+            try {
+                await navigator.clipboard.writeText(text);
+            } catch (e) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                try { document.execCommand('copy'); } catch (_) {}
+                ta.remove();
+            }
+            toast('তালিকা কপি হয়েছে ✓');
+        }
+
+        // ইভেন্ট
+        recipeTypeSelect.addEventListener('change', calculateRecipe);
+        tamarindInput.addEventListener('input', calculateRecipe);
+        inputUnitSelect.addEventListener('change', () => {
+            // একক বদলালে একই পরিমাণ রেখে সংখ্যা রূপান্তর
+            const v = parseFloat(tamarindInput.value);
+            if (isFinite(v) && v > 0) {
+                tamarindInput.value = inputUnitSelect.value === 'g' ? Math.round(v * 1000) : +(v / 1000).toFixed(3);
+            }
+            tamarindInput.step = inputUnitSelect.value === 'g' ? 100 : 0.1;
+            calculateRecipe();
+        });
+
+        function nudge(dir) {
+            const isG = inputUnitSelect.value === 'g';
+            const stepV = isG ? 250 : 0.25;
+            const cur = parseFloat(tamarindInput.value) || 0;
+            const next = Math.max(isG ? 100 : 0.1, cur + dir * stepV);
+            tamarindInput.value = isG ? Math.round(next) : +next.toFixed(2);
+            calculateRecipe();
+        }
+        document.getElementById('plus-btn').addEventListener('click', () => nudge(1));
+        document.getElementById('minus-btn').addEventListener('click', () => nudge(-1));
+
+        document.getElementById('copy-btn').addEventListener('click', copyList);
+        document.getElementById('wa-btn').addEventListener('click', () => {
+            window.open('https://wa.me/?text=' + encodeURIComponent(buildText()), '_blank', 'noopener');
+        });
+        document.getElementById('print-btn').addEventListener('click', () => window.print());
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            const type = recipeTypeSelect.value;
+            ticks[type] = { ing: {}, step: {} };
+            calculateRecipe();
+            toast('টিক মুছে ফেলা হয়েছে');
+        });
+
+        // শুরু
+        load();
+        buildPresets();
+        tamarindInput.step = inputUnitSelect.value === 'g' ? 100 : 0.1;
+        calculateRecipe();
+    </script>
+<script src="assets/site.js"></script>
+</body>
+</html>

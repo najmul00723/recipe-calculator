@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ff7f00">
+<title>স্পেশাল মসলা ক্যালকুলেটর</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+    --brand: #ff7f00;
+    --brand-dark: #e66a00;
+    --brand-text: #d95a00;
+    --bg: #f4f4f4;
+    --card: #ffffff;
+    --text: #333333;
+    --muted: #777777;
+    --soft: #fffaf5;
+    --soft-border: #ffebd6;
+    --line: #e0e0e0;
+    --input-bg: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #17120d;
+        --card: #231c15;
+        --text: #f1e9e0;
+        --muted: #a99d90;
+        --soft: #2b2218;
+        --soft-border: #4a3820;
+        --line: #3d3226;
+        --input-bg: #1b150f;
+        --brand-text: #ffa24d;
+    }
+}
+* { box-sizing: border-box; }
+body {
+    font-family: 'Tiro Bangla', 'Noto Serif Bengali', 'Kalpurush', serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+}
+.container {
+    background: var(--card);
+    border-top: 6px solid var(--brand);
+    box-shadow: 0 8px 16px rgba(0,0,0,.1);
+    border-radius: 8px;
+    max-width: 680px;
+    width: 100%;
+    padding: 24px clamp(16px, 4vw, 35px);
+}
+h1 {
+    color: var(--brand);
+    text-align: center;
+    border-bottom: 2px dashed var(--soft-border);
+    padding-bottom: 10px;
+    margin: 0 0 22px;
+    font-size: clamp(22px, 5vw, 30px);
+}
+h2 { color: var(--brand-dark); margin: 0 0 10px; }
+
+.input-section {
+    background: var(--soft);
+    padding: 18px;
+    border-radius: 6px;
+    border: 1px solid var(--soft-border);
+    margin-bottom: 22px;
+    text-align: center;
+}
+.input-section > label { font-size: 17px; font-weight: bold; display: block; }
+.input-group {
+    display: flex; justify-content: center; align-items: center;
+    gap: 10px; margin-top: 14px; flex-wrap: wrap;
+}
+input, select, button { font-family: inherit; }
+input[type="text"], input[type="number"], select {
+    padding: 10px; border: 1px solid #ccc; border-radius: 6px;
+    font-size: 16px; background: var(--input-bg); color: var(--text);
+}
+input.amount { width: 130px; text-align: center; font-size: 18px; }
+input:focus, select:focus, button:focus-visible {
+    outline: 2px solid var(--brand); outline-offset: 1px;
+}
+.presets { display: flex; justify-content: center; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.chip {
+    border: 1px solid var(--brand); background: transparent; color: var(--brand-dark);
+    padding: 6px 14px; border-radius: 999px; cursor: pointer; font-size: 15px;
+}
+.chip:hover, .chip.active { background: var(--brand); color: #fff; }
+
+.summary {
+    display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap;
+}
+.summary div {
+    flex: 1 1 140px; background: var(--soft); border: 1px solid var(--soft-border);
+    border-radius: 6px; padding: 10px; text-align: center;
+}
+.summary small { display: block; color: var(--muted); font-size: 14px; }
+.summary b { color: var(--brand-text); font-size: 19px; }
+
+.table-wrap { overflow-x: auto; margin-bottom: 14px; }
+table { width: 100%; border-collapse: collapse; }
+th, td { border: 1px solid var(--line); padding: 10px 12px; font-size: 16px; text-align: left; }
+th { background: var(--brand); color: #fff; text-align: center; }
+td.amt { text-align: center; font-weight: bold; color: var(--brand-text); white-space: nowrap; }
+td.pct { text-align: center; color: var(--muted); }
+td.cost { text-align: center; white-space: nowrap; }
+tfoot td { font-weight: bold; background: var(--soft); }
+.price-input { width: 78px; padding: 6px; font-size: 15px; text-align: center; }
+
+.cost-note { font-size: 14px; color: var(--muted); margin: 0 0 18px; }
+
+.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 26px; }
+.btn {
+    flex: 1 1 120px; padding: 10px 12px; border: none; border-radius: 6px;
+    background: var(--brand); color: #fff; font-size: 16px; cursor: pointer;
+}
+.btn:hover { background: var(--brand-dark); }
+.btn.alt { background: transparent; border: 1px solid var(--brand); color: var(--brand-dark); }
+.btn.alt:hover { background: var(--soft); }
+
+.steps-section {
+    padding: 18px; border-left: 5px solid var(--brand);
+    box-shadow: 0 2px 5px rgba(0,0,0,.05); background: var(--card);
+}
+.step-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+.progress { color: var(--muted); font-size: 14px; }
+ul.instructions { list-style: none; padding: 0; margin: 10px 0 0; }
+ul.instructions li { margin-bottom: 4px; }
+ul.instructions label {
+    display: flex; gap: 10px; align-items: flex-start; cursor: pointer;
+    line-height: 1.7; font-size: 16px; padding: 4px 0;
+}
+ul.instructions input { margin-top: 7px; accent-color: var(--brand); width: 18px; height: 18px; flex: none; }
+ul.instructions input:checked + span { text-decoration: line-through; color: var(--muted); }
+.reset-link { background: none; border: none; color: var(--brand-dark); cursor: pointer; font-size: 14px; text-decoration: underline; }
+
+.tips { margin-top: 20px; background: var(--soft); border: 1px dashed var(--soft-border); border-radius: 6px; padding: 14px 18px; font-size: 15px; line-height: 1.8; }
+.tips h3 { margin: 0 0 6px; color: var(--brand-dark); font-size: 17px; }
+.tips ul { margin: 0; padding-left: 20px; }
+
+#toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: #333; color: #fff; padding: 10px 20px; border-radius: 999px;
+    opacity: 0; transition: .25s; pointer-events: none; z-index: 10;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media print {
+    body { background: #fff; padding: 0; }
+    .container { box-shadow: none; border-top: none; }
+    .input-section .presets, .actions, .reset-link, .price-col, .cost-note, .summary .cost-box { display: none !important; }
+    :root { --text: #000; }
+}
+</style>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>ফুচকা ও চটপটির স্পেশাল মসলা</h1>
+
+    <div class="input-section">
+        <label for="baseAmount">যে উপাদানটা আপনার কাছে আছে, সেটা বেছে পরিমাণ দিন:</label>
+        <div class="input-group">
+            <select id="baseIngredient" aria-label="উপাদান"></select>
+            <input type="text" inputmode="decimal" class="amount" id="baseAmount" value="1" autocomplete="off" aria-label="পরিমাণ">
+            <select id="baseUnit" aria-label="একক">
+                <option value="kg">কেজি</option>
+                <option value="g">গ্রাম</option>
+            </select>
+        </div>
+        <div class="presets" id="presets"></div>
+    </div>
+
+    <div class="summary">
+        <div><small>মোট মসলা তৈরি হবে</small><b id="totalWeight">—</b></div>
+        <div class="cost-box"><small>মোট খরচ</small><b id="totalCostBox">—</b></div>
+        <div class="cost-box"><small>প্রতি কেজির খরচ</small><b id="perKgBox">—</b></div>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>উপাদান</th>
+                    <th>পরিমাণ</th>
+                    <th>অনুপাত</th>
+                    <th class="price-col">কেজি প্রতি দাম (৳)</th>
+                    <th class="price-col">খরচ (৳)</th>
+                </tr>
+            </thead>
+            <tbody id="recipeTable"></tbody>
+            <tfoot id="recipeFoot"></tfoot>
+        </table>
+    </div>
+    <p class="cost-note">দাম ঘরে আপনার কেনা দাম লিখলে খরচ নিজে নিজে হিসাব হবে। দাম ফোনে সংরক্ষিত থাকে। (টালার পর কিছুটা ওজন কমে যেতে পারে, সেটা হিসাবে ধরা হয়নি।)</p>
+
+    <div class="actions">
+        <button class="btn" id="copyBtn">📋 কপি করুন</button>
+        <button class="btn" id="shareBtn">📤 শেয়ার</button>
+        <button class="btn alt" id="printBtn">🖨️ প্রিন্ট</button>
+    </div>
+
+    <div class="steps-section">
+        <div class="step-head">
+            <h2>প্রস্তুত প্রণালী</h2>
+            <span class="progress"><span id="progressText"></span> <button class="reset-link" id="resetSteps">রিসেট</button></span>
+        </div>
+        <ul class="instructions" id="steps"></ul>
+    </div>
+
+    <div class="tips">
+        <h3>কিছু টিপস</h3>
+        <ul>
+            <li>মসলা অল্প আঁচে নাড়তে নাড়তে টালুন, সুগন্ধ বের হলেই নামিয়ে ফেলুন। পুড়ে গেলে তেতো হবে।</li>
+            <li>পুরোপুরি ঠান্ডা না হলে গুঁড়ো করবেন না, নইলে গরম বাষ্পে গুঁড়ো জমাট বাঁধে।</li>
+            <li>ভালো স্বাদের জন্য বয়ামে ঢাকনা শক্ত করে এঁটে ঠান্ডা, শুকনো জায়গায় রাখুন।</li>
+        </ul>
+    </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ১ কেজি ধনিয়ার সাপেক্ষে অনুপাত (গ্রামে)
+const INGREDIENTS = [
+    { id: 'dhonia',  name: 'ধনিয়া',            ratio: 1 },
+    { id: 'jeera',   name: 'জিরা (১ নাম্বার)',   ratio: 250 / 1000 },
+    { id: 'pepper',  name: 'সাদা গোলমরিচ',      ratio: 50 / 1000 },
+    { id: 'cinnamon',name: 'দারুচিনি',           ratio: 50 / 1000 }
+];
+
+const STEPS = [
+    'খোলা পাত্রে ধনিয়া ভালোভাবে টেলে নিন।',
+    'সাদা গোলমরিচ ও জিরা আলাদাভাবে খোলা পাত্রে টেলে নিন।',
+    'দারুচিনি আলাদাভাবে খোলা পাত্রে টেলে নিন।',
+    'মশলাগুলো টালা হয়ে গেলে ঠান্ডা হওয়ার জন্য অপেক্ষা করুন।',
+    'ধনিয়া ব্লেন্ডারে একদম মিহি গুঁড়ো করে নিন।',
+    'জিরা ও সাদা গোলমরিচ একসাথে ব্লেন্ডারে মিহি করে নিন।',
+    'দারুচিনি আলাদাভাবে ব্লেন্ড করে পাউডার করে নিন।',
+    'সবগুলো মশলা ব্লেন্ড করা হয়ে গেলে একটি বড় পাত্রে নিয়ে হাতের সাহায্যে ভালোভাবে একসাথে মিশিয়ে নিন।',
+    'মেশানো হয়ে গেলে মশলাগুলো একটি পরিষ্কার ও শুষ্ক বয়ামে সংরক্ষণ করুন।'
+];
+
+const PRESETS = [
+    { label: '২৫০ গ্রাম', g: 250 },
+    { label: '৫০০ গ্রাম', g: 500 },
+    { label: '১ কেজি',    g: 1000 },
+    { label: '২ কেজি',    g: 2000 },
+    { label: '৫ কেজি',    g: 5000 }
+];
+
+const BN = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+const toBn = s => String(s).replace(/\d/g, d => BN[d]);
+const toEn = s => String(s).replace(/[০-৯]/g, d => BN.indexOf(d)).replace(/[,،]/g, '.').replace('।', '.');
+
+// সংরক্ষণ (ব্যর্থ হলেও অ্যাপ চলবে)
+const store = {
+    get(k, def) { try { const v = localStorage.getItem('masala_' + k); return v === null ? def : JSON.parse(v); } catch (e) { return def; } },
+    set(k, v)   { try { localStorage.setItem('masala_' + k, JSON.stringify(v)); } catch (e) {} }
+};
+
+let prices = store.get('prices', {});
+let checked = store.get('checked', []);
+let lastText = '';
+
+const $ = id => document.getElementById(id);
+
+function num(n, d = 2) { return toBn(parseFloat(n.toFixed(d))); }
+
+function formatWeight(g) {
+    if (g < 1000) return num(g) + ' গ্রাম';
+    let kg = Math.floor(g / 1000);
+    let rem = Math.round((g - kg * 1000) * 10) / 10;
+    if (rem >= 1000) { kg += 1; rem = 0; }
+    return toBn(kg) + ' কেজি' + (rem > 0 ? ' ' + num(rem, 1) + ' গ্রাম' : '');
+}
+
+function toast(msg) {
+    const t = $('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function getBaseGrams() {
+    const raw = toEn($('baseAmount').value.trim());
+    const amount = parseFloat(raw);
+    if (isNaN(amount) || amount <= 0) return null;
+    return $('baseUnit').value === 'kg' ? amount * 1000 : amount;
+}
+
+function calculate() {
+    const tbody = $('recipeTable'), tfoot = $('recipeFoot');
+    const baseGrams = getBaseGrams();
+
+    store.set('state', { ing: $('baseIngredient').value, amt: $('baseAmount').value, unit: $('baseUnit').value });
+
+    if (baseGrams === null) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#d33">সঠিক পরিমাণ ইনপুট দিন</td></tr>';
+        tfoot.innerHTML = '';
+        $('totalWeight').textContent = $('totalCostBox').textContent = $('perKgBox').textContent = '—';
+        lastText = '';
+        return;
+    }
+
+    const baseIng = INGREDIENTS.find(i => i.id === $('baseIngredient').value);
+    const dhonia = baseGrams / baseIng.ratio;
+    const rows = INGREDIENTS.map(i => ({ ...i, g: dhonia * i.ratio }));
+    const total = rows.reduce((s, r) => s + r.g, 0);
+
+    let totalCost = 0, anyPrice = false;
+    tbody.innerHTML = rows.map(r => {
+        const p = parseFloat(toEn(String(prices[r.id] ?? '')));
+        let cost = '—';
+        if (!isNaN(p) && p >= 0 && prices[r.id] !== '' && prices[r.id] != null) {
+            const c = r.g / 1000 * p; totalCost += c; anyPrice = true; cost = num(c, 0);
+        }
+        return `<tr>
+            <td>${r.name}</td>
+            <td class="amt">${formatWeight(r.g)}</td>
+            <td class="pct">${num(r.g / total * 100, 1)}%</td>
+            <td class="price-col" style="text-align:center">
+                <input type="text" inputmode="decimal" class="price-input" data-id="${r.id}"
+                       value="${prices[r.id] != null ? toBn(prices[r.id]) : ''}" placeholder="০" aria-label="${r.name} কেজি প্রতি দাম">
+            </td>
+            <td class="cost price-col">${cost}</td>
+        </tr>`;
+    }).join('');
+
+    tfoot.innerHTML = `<tr>
+        <td>মোট</td><td class="amt">${formatWeight(total)}</td><td class="pct">১০০%</td>
+        <td class="price-col"></td><td class="cost price-col">${anyPrice ? num(totalCost, 0) : '—'}</td>
+    </tr>`;
+
+    $('totalWeight').textContent = formatWeight(total);
+    $('totalCostBox').textContent = anyPrice ? '৳ ' + num(totalCost, 0) : '—';
+    $('perKgBox').textContent = anyPrice ? '৳ ' + num(totalCost / (total / 1000), 0) : '—';
+
+    // প্রিসেট হাইলাইট (ধনিয়ার ভিত্তিতে)
+    document.querySelectorAll('.chip').forEach(c =>
+        c.classList.toggle('active', Math.abs(+c.dataset.g - dhonia) < 0.01));
+
+    // কপি/শেয়ার টেক্সট
+    lastText = '🌶️ ফুচকা ও চটপটির স্পেশাল মসলা\n\n' +
+        rows.map(r => `• ${r.name}: ${formatWeight(r.g)}`).join('\n') +
+        `\n\nমোট: ${formatWeight(total)}` +
+        (anyPrice ? `\nখরচ: ৳ ${num(totalCost, 0)} (প্রতি কেজি ৳ ${num(totalCost / (total / 1000), 0)})` : '') +
+        '\n\nপ্রস্তুত প্রণালী:\n' + STEPS.map((s, i) => `${toBn(i + 1)}. ${s}`).join('\n');
+}
+
+// দাম ইনপুট: পুরো টেবিল নতুন করে না বানিয়ে (ফোকাস ধরে রাখতে) শুধু আপডেট
+$('recipeTable').addEventListener('input', e => {
+    if (!e.target.classList.contains('price-input')) return;
+    const id = e.target.dataset.id;
+    const v = toEn(e.target.value.trim());
+    prices[id] = v;
+    store.set('prices', prices);
+    const pos = e.target.selectionStart;
+    calculate();
+    const again = document.querySelector(`.price-input[data-id="${id}"]`);
+    if (again) { again.focus(); try { again.setSelectionRange(pos, pos); } catch (err) {} }
+});
+
+// উপাদান-সিলেক্টর ও প্রিসেট
+INGREDIENTS.forEach(i => $('baseIngredient').add(new Option(i.name, i.id)));
+$('presets').innerHTML = PRESETS.map(p => `<button type="button" class="chip" data-g="${p.g}">${p.label}</button>`).join('');
+$('presets').addEventListener('click', e => {
+    const g = e.target.dataset && e.target.dataset.g;
+    if (!g) return;
+    // প্রিসেট সবসময় ধনিয়ার পরিমাণ ধরে
+    $('baseIngredient').value = 'dhonia';
+    const grams = +g;
+    if (grams >= 1000) { $('baseUnit').value = 'kg'; $('baseAmount').value = toBn(grams / 1000); }
+    else { $('baseUnit').value = 'g'; $('baseAmount').value = toBn(grams); }
+    calculate();
+});
+
+// প্রস্তুত প্রণালী (টিক চিহ্নসহ)
+function renderSteps() {
+    $('steps').innerHTML = STEPS.map((s, i) =>
+        `<li><label><input type="checkbox" data-i="${i}" ${checked.includes(i) ? 'checked' : ''}><span>${s}</span></label></li>`).join('');
+    $('progressText').textContent = `${toBn(checked.length)}/${toBn(STEPS.length)} ধাপ সম্পন্ন`;
+}
+$('steps').addEventListener('change', e => {
+    const i = +e.target.dataset.i;
+    checked = e.target.checked ? [...new Set([...checked, i])] : checked.filter(x => x !== i);
+    store.set('checked', checked);
+    $('progressText').textContent = `${toBn(checked.length)}/${toBn(STEPS.length)} ধাপ সম্পন্ন`;
+});
+$('resetSteps').addEventListener('click', () => { checked = []; store.set('checked', checked); renderSteps(); });
+
+// বোতাম
+$('copyBtn').addEventListener('click', async () => {
+    if (!lastText) return toast('আগে সঠিক পরিমাণ দিন');
+    try { await navigator.clipboard.writeText(lastText); toast('কপি হয়েছে ✓'); }
+    catch (e) {
+        const ta = document.createElement('textarea'); ta.value = lastText; document.body.appendChild(ta);
+        ta.select(); try { document.execCommand('copy'); toast('কপি হয়েছে ✓'); } catch (_) { toast('কপি করা যায়নি'); }
+        ta.remove();
+    }
+});
+$('shareBtn').addEventListener('click', async () => {
+    if (!lastText) return toast('আগে সঠিক পরিমাণ দিন');
+    if (navigator.share) { try { await navigator.share({ text: lastText }); } catch (e) {} }
+    else window.open('https://wa.me/?text=' + encodeURIComponent(lastText), '_blank');
+});
+$('printBtn').addEventListener('click', () => window.print());
+
+$('baseAmount').addEventListener('input', calculate);
+$('baseUnit').addEventListener('change', calculate);
+$('baseIngredient').addEventListener('change', calculate);
+
+// শুরু: আগের অবস্থা ফিরিয়ে আনা
+(function init() {
+    const s = store.get('state', null);
+    if (s) {
+        if (INGREDIENTS.some(i => i.id === s.ing)) $('baseIngredient').value = s.ing;
+        if (s.amt) $('baseAmount').value = s.amt;
+        if (s.unit === 'g' || s.unit === 'kg') $('baseUnit').value = s.unit;
+    } else {
+        $('baseAmount').value = toBn(1);
+    }
+    renderSteps();
+    calculate();
+})();
+</script>
+<script src="assets/site.js"></script>
+</body>
+</html>

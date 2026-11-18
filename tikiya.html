@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>টিকিয়া রেসিপি ও পরিমাণ ক্যালকুলেটর</title>
+<style>
+    :root {
+        --bg: #f4f7f6;
+        --card: #ffffff;
+        --text: #2c3e50;
+        --muted: #7f8c8d;
+        --accent: #d35400;
+        --accent-soft: #fdf2e9;
+        --border: #e3e8e6;
+        --row-hover: #f6f1ec;
+        --group-bg: #f3e3d6;
+        --shadow: 0 4px 14px rgba(0,0,0,0.08);
+    }
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg: #14181a;
+            --card: #1e2427;
+            --text: #e8ecec;
+            --muted: #98a5a6;
+            --accent: #ff8a3d;
+            --accent-soft: #2b2119;
+            --border: #333c40;
+            --row-hover: #262e31;
+            --group-bg: #3a2a1f;
+            --shadow: 0 4px 14px rgba(0,0,0,0.4);
+        }
+    }
+    * { box-sizing: border-box; }
+    body {
+        font-family: 'Noto Sans Bengali', 'Kalpurush', 'SolaimanLipi', 'Nikosh', 'Segoe UI', Tahoma, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 16px;
+        line-height: 1.5;
+    }
+    .calculator-container {
+        background: var(--card);
+        padding: 26px;
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        max-width: 680px;
+        margin: 10px auto;
+    }
+    h2 {
+        text-align: center;
+        color: var(--accent);
+        margin: 0 0 20px;
+        border-bottom: 2px solid var(--border);
+        padding-bottom: 12px;
+    }
+    label.title { display: block; font-weight: 700; margin-bottom: 8px; }
+    .input-row { margin-bottom: 18px; }
+    .inline { display: flex; gap: 10px; }
+    input[type=number], select {
+        padding: 11px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 16px;
+        font-family: inherit;
+        background: var(--card);
+        color: var(--text);
+    }
+    input[type=number] { flex: 1; min-width: 0; }
+    select { width: 110px; }
+    input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+    .presets { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .chip {
+        border: 1px solid var(--accent);
+        background: transparent;
+        color: var(--accent);
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-family: inherit;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    .chip:hover, .chip.active { background: var(--accent); color: #fff; }
+
+    .summary-box {
+        background: var(--accent-soft);
+        border-left: 5px solid var(--accent);
+        padding: 14px 16px;
+        margin: 20px 0;
+        border-radius: 6px;
+    }
+    .summary-box p { margin: 7px 0; font-size: 15px; }
+    .highlight { color: var(--accent); font-weight: 700; font-size: 18px; }
+    .big { font-size: 26px; }
+
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .btn {
+        flex: 1;
+        min-width: 110px;
+        padding: 10px 12px;
+        border: none;
+        border-radius: 8px;
+        background: var(--accent);
+        color: #fff;
+        font-family: inherit;
+        font-size: 15px;
+        cursor: pointer;
+    }
+    .btn.secondary { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+    .btn:active { transform: scale(0.98); }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: var(--accent); color: #fff; }
+    td:last-child, th:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+    tr.group td { background: var(--group-bg); font-weight: 700; color: var(--accent); }
+    tbody tr:not(.group):hover { background: var(--row-hover); }
+
+    .note {
+        font-size: 14px;
+        color: var(--muted);
+        margin-top: 24px;
+        line-height: 1.8;
+        border-top: 1px solid var(--border);
+        padding-top: 14px;
+    }
+    .note strong { color: var(--text); }
+    .toast {
+        position: fixed; bottom: 24px; left: 50%;
+        transform: translateX(-50%) translateY(80px);
+        background: #2c3e50; color: #fff;
+        padding: 10px 20px; border-radius: 8px;
+        transition: transform .25s; z-index: 10;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 480px) {
+        .calculator-container { padding: 16px; }
+        th, td { padding: 9px 6px; font-size: 15px; }
+    }
+    @media print {
+        body { background: #fff; color: #000; padding: 0; }
+        .calculator-container { box-shadow: none; max-width: 100%; }
+        .actions, .presets, .toast { display: none !important; }
+        input, select { border: none; appearance: none; font-weight: 700; }
+    }
+</style>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<div class="calculator-container">
+    <h2>টিকিয়া রেসিপি ক্যালকুলেটর</h2>
+
+    <div class="input-row">
+        <label class="title" for="baseQuantity">প্রধান ডালের পরিমাণ (ছোলা/খেসারি/বুট/মসুর):</label>
+        <div class="inline">
+            <input type="number" id="baseQuantity" value="1" min="0.1" step="0.1" inputmode="decimal">
+            <select id="unitSelect">
+                <option value="kg">কেজি</option>
+                <option value="gram">গ্রাম</option>
+            </select>
+        </div>
+        <div class="presets" id="presets"></div>
+    </div>
+
+    <div class="input-row">
+        <label class="title" for="tikiyaWeight">একটি টিকিয়ার আনুমানিক ওজন (গ্রাম):</label>
+        <input type="number" id="tikiyaWeight" value="50" min="1" inputmode="decimal" style="width:100%">
+    </div>
+
+    <div class="summary-box">
+        <p><strong>১. শুধুমাত্র ডাল ও বেসনের মোট ওজন:</strong> <span id="totalDalBesan" class="highlight">0</span></p>
+        <p><strong>২. মসলাসহ সম্পূর্ণ মিশ্রণের মোট ওজন:</strong> <span id="totalMixture">0</span></p>
+        <p><strong>৩. মোট টিকিয়া তৈরি হবে (আনুমানিক):</strong> <span id="totalPieces" class="highlight big">0</span> <strong style="color:var(--accent)">টি</strong></p>
+    </div>
+
+    <div class="actions">
+        <button class="btn" id="copyBtn" type="button">📋 তালিকা কপি</button>
+        <button class="btn secondary" id="printBtn" type="button">🖨️ প্রিন্ট</button>
+        <button class="btn secondary" id="resetBtn" type="button">↺ রিসেট</button>
+    </div>
+
+    <table id="recipeTable">
+        <thead>
+            <tr><th>উপকরণের নাম</th><th>প্রয়োজনীয় পরিমাণ</th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <div class="note">
+        <strong>প্রস্তুত প্রণালী ও নিয়ম:</strong><br>
+        ★ সকালের প্রথম প্রহরে সকল ডাল ভালো করে ধুয়ে পানিতে ভিজিয়ে রেখে দিতে হবে, বিকালের প্রথম প্রহরে সকল ডাল ব্লেন্ড করে ফেলতে হবে।<br>
+        ★ সকল শুকনো মসলা মিশ্রণটি মিক্স করার ঠিক পূর্বে ব্লেন্ড করতে হবে।<br>
+        ★ পেঁয়াজ ও রসুন ব্লেন্ড করা যাবেনা, এটা হাতে কুচি করে কেটে মিক্স করতে হবে।<br>
+        <small>*নোট: ডাল ভিজিয়ে রাখলে কিছুটা পানি শোষণ করে ওজন বৃদ্ধি পায়, এখানে শুকনা উপাদানের ওজনের ভিত্তিতে আনুমানিক পিস হিসাব করা হয়েছে।</small>
+    </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+    // ১ কেজি প্রধান ডালের ওপর ভিত্তি করে মূল রেসিপি (ওজন গ্রামে)
+    const baseRecipe = [
+        { group: "ডাল ও বেসন" },
+        { name: "ছোলার ডাল", value: 1000, isMainComponent: true, type: "weight" },
+        { name: "খেসারির ডাল", value: 1000, isMainComponent: true, type: "weight" },
+        { name: "বুটের ডাল", value: 1000, isMainComponent: true, type: "weight" },
+        { name: "মসুরের ডাল", value: 1000, isMainComponent: true, type: "weight" },
+        { name: "মুগ ডাল", value: 500, isMainComponent: true, type: "weight" },
+        { name: "খেসারি বেসন", value: 1000, isMainComponent: true, type: "weight" },
+        { group: "ঝাল, পেঁয়াজ ও রসুন" },
+        { name: "কাঁচা ঝাল", value: 190, isMainComponent: false, type: "weight" },
+        { name: "শুকনো ঝাল", value: 190, isMainComponent: false, type: "weight" },
+        { name: "পেঁয়াজ কাটা", value: 750, isMainComponent: false, type: "weight" },
+        { name: "রসুন কাটা", value: 500, isMainComponent: false, type: "weight" },
+        { group: "মসলা" },
+        { name: "জায়ফল", value: 2, isMainComponent: false, type: "pieces" },
+        { name: "জয়ত্রী", value: 5, isMainComponent: false, type: "weight" },
+        { name: "এলাচ", value: 10, isMainComponent: false, type: "pieces" },
+        { name: "লবঙ্গ", value: 10, isMainComponent: false, type: "weight" },
+        { name: "আদা", value: 100, isMainComponent: false, type: "weight" },
+        { name: "দারুচিনি", value: 20, isMainComponent: false, type: "weight" },
+        { name: "তেজপাতা", value: 5, isMainComponent: false, type: "weight" },
+        { name: "জিরা গুঁড়া", value: 32, isMainComponent: false, type: "weight" },
+        { name: "গোলমরিচ গুঁড়া", value: 12, isMainComponent: false, type: "weight" },
+        { name: "মাংসের মসলা", value: 33.33, isMainComponent: false, type: "weight" },
+        { name: "ধনে গুঁড়া", value: 50, isMainComponent: false, type: "weight" },
+        { name: "লবণ (স্বাদমতো)", value: 100, isMainComponent: false, type: "weight" }
+    ];
+
+    const $ = id => document.getElementById(id);
+    const STORE_KEY = "tikiyaCalcV2";
+
+    function bn(n, maxFrac = 2) {
+        return n.toLocaleString('bn-BD', { maximumFractionDigits: maxFrac });
+    }
+
+    function formatWeight(grams) {
+        if (grams >= 1000) return bn(grams / 1000) + " কেজি";
+        return bn(Math.round(grams * 10) / 10, 1) + " গ্রাম";
+    }
+
+    let lastRows = [];
+    let lastSummary = {};
+
+    function calculateRecipe() {
+        const qty = parseFloat($('baseQuantity').value) || 0;
+        const unit = $('unitSelect').value;
+        const perPiece = parseFloat($('tikiyaWeight').value) > 0 ? parseFloat($('tikiyaWeight').value) : 50;
+
+        const inputInGrams = unit === 'kg' ? qty * 1000 : qty;
+        const multiplier = inputInGrams / 1000;
+
+        const tbody = document.querySelector('#recipeTable tbody');
+        tbody.innerHTML = '';
+        lastRows = [];
+
+        let totalDalBesan = 0;
+        let totalMixture = 0;
+
+        baseRecipe.forEach(item => {
+            const tr = document.createElement('tr');
+            if (item.group) {
+                tr.className = 'group';
+                tr.innerHTML = `<td colspan="2">${item.group}</td>`;
+                tbody.appendChild(tr);
+                lastRows.push({ group: item.group });
+                return;
+            }
+            const calc = item.value * multiplier;
+            let display;
+            if (item.type === 'pieces') {
+                display = bn(Math.ceil(calc - 1e-9), 0) + " পিস";
+            } else {
+                display = formatWeight(calc);
+                totalMixture += calc;
+                if (item.isMainComponent) totalDalBesan += calc;
+            }
+            tr.innerHTML = `<td>${item.name}</td><td>${display}</td>`;
+            tbody.appendChild(tr);
+            lastRows.push({ name: item.name, display });
+        });
+
+        const pieces = Math.max(0, Math.floor(totalMixture / perPiece));
+        lastSummary = {
+            dal: formatWeight(totalDalBesan),
+            mix: formatWeight(totalMixture),
+            pieces: bn(pieces, 0),
+            qtyText: bn(qty) + (unit === 'kg' ? " কেজি" : " গ্রাম")
+        };
+
+        $('totalDalBesan').innerText = lastSummary.dal;
+        $('totalMixture').innerText = lastSummary.mix;
+        $('totalPieces').innerText = lastSummary.pieces;
+
+        highlightPreset(inputInGrams);
+        save();
+    }
+
+    // দ্রুত প্রিসেট বাটন
+    const presets = [0.5, 1, 2, 5, 10];
+    function buildPresets() {
+        const box = $('presets');
+        presets.forEach(p => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'chip';
+            b.dataset.g = p * 1000;
+            b.textContent = bn(p) + " কেজি";
+            b.onclick = () => {
+                $('unitSelect').value = 'kg';
+                $('baseQuantity').value = p;
+                calculateRecipe();
+            };
+            box.appendChild(b);
+        });
+    }
+    function highlightPreset(grams) {
+        document.querySelectorAll('.chip').forEach(c =>
+            c.classList.toggle('active', Math.abs(parseFloat(c.dataset.g) - grams) < 0.01));
+    }
+
+    // কপি করার টেক্সট
+    function buildText() {
+        let t = `টিকিয়া রেসিপি (প্রধান ডাল: ${lastSummary.qtyText})\n`;
+        t += `ডাল ও বেসন: ${lastSummary.dal}\nমোট মিশ্রণ: ${lastSummary.mix}\nআনুমানিক টিকিয়া: ${lastSummary.pieces} টি\n`;
+        lastRows.forEach(r => {
+            t += r.group ? `\n— ${r.group} —\n` : `${r.name}: ${r.display}\n`;
+        });
+        return t;
+    }
+    function toast(msg) {
+        const el = $('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 1800);
+    }
+    async function copyList() {
+        const text = buildText();
+        try {
+            await navigator.clipboard.writeText(text);
+            toast("তালিকা কপি হয়েছে ✓");
+        } catch (e) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); toast("তালিকা কপি হয়েছে ✓"); }
+            catch (_) { toast("কপি করা যায়নি"); }
+            ta.remove();
+        }
+    }
+
+    // শেষ ইনপুট মনে রাখা
+    function save() {
+        try {
+            localStorage.setItem(STORE_KEY, JSON.stringify({
+                q: $('baseQuantity').value, u: $('unitSelect').value, w: $('tikiyaWeight').value
+            }));
+        } catch (e) {}
+    }
+    function load() {
+        try {
+            const s = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+            if (s) {
+                $('baseQuantity').value = s.q;
+                $('unitSelect').value = s.u;
+                $('tikiyaWeight').value = s.w;
+            }
+        } catch (e) {}
+    }
+    function reset() {
+        $('baseQuantity').value = 1;
+        $('unitSelect').value = 'kg';
+        $('tikiyaWeight').value = 50;
+        calculateRecipe();
+    }
+
+    $('baseQuantity').addEventListener('input', calculateRecipe);
+    $('unitSelect').addEventListener('change', calculateRecipe);
+    $('tikiyaWeight').addEventListener('input', calculateRecipe);
+    $('copyBtn').addEventListener('click', copyList);
+    $('printBtn').addEventListener('click', () => window.print());
+    $('resetBtn').addEventListener('click', reset);
+
+    buildPresets();
+    load();
+    calculateRecipe();
+</script>
+<script src="assets/site.js"></script>
+</body>
+</html>

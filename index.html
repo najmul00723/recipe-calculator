@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2b1a0e">
+<title>কিছুক্ষণ আপ্যায়ন — রেসিপি ক্যালকুলেটর</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fdf6ee; --card:#fff; --text:#2c1e12; --muted:#7d6b5a; --line:#f0ddc8;
+  --brand:#d35400; --brand2:#ff8a1f; --dark:#2b1a0e;
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#17110b; --card:#241a11; --text:#f4eadf; --muted:#b3a393; --line:#3d2d1d; --brand:#ff9a45}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Tiro Bangla','Noto Serif Bengali','Kalpurush',serif;line-height:1.7}
+.wrap{max-width:1000px;margin:0 auto;padding:0 16px}
+
+.hero{
+  background:linear-gradient(135deg,#2b1a0e 0%,#5a2d0c 55%,#c2570b 100%);
+  color:#fff3e3;text-align:center;padding:48px 16px 64px;
+  margin:0 -16px 0;border-radius:0 0 28px 28px;
+}
+.hero .tag{display:inline-block;background:rgba(255,255,255,.14);padding:4px 16px;border-radius:999px;font-size:14px;margin-bottom:14px}
+.hero h1{margin:0 0 10px;font-size:clamp(28px,6vw,46px);line-height:1.25}
+.hero p{margin:0 auto;max-width:560px;color:#f3d9bd;font-size:clamp(15px,3.6vw,18px)}
+
+.grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px;
+  margin:-34px 0 28px;
+}
+.card{
+  display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);
+  border-radius:18px;padding:20px;text-decoration:none;color:inherit;
+  box-shadow:0 6px 18px rgba(80,40,0,.08);transition:transform .15s,box-shadow .15s,border-color .15s;
+  position:relative;overflow:hidden;
+}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--c,var(--brand))}
+.card:hover{transform:translateY(-4px);box-shadow:0 12px 26px rgba(80,40,0,.18);border-color:var(--c,var(--brand))}
+.card:focus-visible{outline:3px solid var(--brand2);outline-offset:2px}
+.icon{
+  width:54px;height:54px;border-radius:14px;display:grid;place-items:center;font-size:28px;
+  background:color-mix(in srgb,var(--c,var(--brand)) 14%,transparent);margin-bottom:12px;
+}
+.card h2{margin:0 0 4px;font-size:21px;color:var(--c,var(--brand))}
+.card p{margin:0 0 14px;color:var(--muted);font-size:15px;flex:1}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.meta span{font-size:13px;background:color-mix(in srgb,var(--c,var(--brand)) 10%,transparent);color:var(--c,var(--brand));padding:2px 10px;border-radius:999px}
+.go{font-weight:700;color:var(--c,var(--brand));font-size:15px}
+.card:hover .go{letter-spacing:.3px}
+
+h3.sec{font-size:22px;margin:30px 0 12px;color:var(--brand)}
+.tips{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:10px}
+.tip{background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:14px 16px;font-size:15px}
+.tip b{display:block;margin-bottom:2px;color:var(--brand)}
+
+#siteFoot{margin-top:18px}
+body.has-nav{padding-top:var(--nav-h) !important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="tag">ফুচকা · চটপটি · টিকিয়া</span>
+    <h1>রেসিপি ক্যালকুলেটর</h1>
+    <p>যতটুকু উপাদান আছে সেটা লিখুন — বাকি সব উপকরণের সঠিক পরিমাণ, খরচ আর প্রস্তুত প্রণালী সাথে সাথে পেয়ে যান।</p>
+  </header>
+
+  <main class="grid" id="cards">
+    <a class="card" href="masala.html" style="--c:#e66a00">
+      <div class="icon">🌶️</div>
+      <h2>স্পেশাল মসলা</h2>
+      <p>ধনিয়া, জিরা, সাদা গোলমরিচ ও দারুচিনির মসলা। যেকোনো উপাদানের পরিমাণ দিলে বাকিগুলো হিসাব হবে, সাথে খরচও।</p>
+      <div class="meta"><span>খরচ হিসাব</span><span>শেয়ার</span></div>
+      <span class="go">খুলুন ←</span>
+    </a>
+    <a class="card" href="mishti-tok.html" style="--c:#c0392b">
+      <div class="icon">🍯</div>
+      <h2>মিষ্টি টক</h2>
+      <p>তেঁতুলের পরিমাণ অনুযায়ী স্পেশাল ও নরমাল দুই ধরনের মিষ্টি টকের উপকরণ ও প্রস্তুত প্রণালী।</p>
+      <div class="meta"><span>২ রেসিপি</span><span>টিক চেকলিস্ট</span></div>
+      <span class="go">খুলুন ←</span>
+    </a>
+    <a class="card" href="chotpoti.html" style="--c:#b8860b">
+      <div class="icon">🥣</div>
+      <h2>চটপটি</h2>
+      <p>ডাল, শাহী মসলা ও তেঁতুলের টক — তিন ভাগে আলাদা হিসাব এবং সব মিলিয়ে একটি বাজার তালিকা।</p>
+      <div class="meta"><span>বাজার তালিকা</span><span>টাইমার</span></div>
+      <span class="go">খুলুন ←</span>
+    </a>
+    <a class="card" href="fuchka-vorta.html" style="--c:#2e8b57">
+      <div class="icon">🧆</div>
+      <h2>ফুচকা ও ভেলপুরি ভর্তা</h2>
+      <p>ডাবলি ডালের পরিমাণ থেকে ভর্তার সব উপকরণ, প্লেট প্রতি খরচ ও টাইমারসহ।</p>
+      <div class="meta"><span>প্লেট প্রতি খরচ</span><span>টাইমার</span></div>
+      <span class="go">খুলুন ←</span>
+    </a>
+    <a class="card" href="tikiya.html" style="--c:#8e44ad">
+      <div class="icon">🍘</div>
+      <h2>টিকিয়া</h2>
+      <p>ডাল ও বেসনের পরিমাণ দিলে মসলাসহ পুরো মিশ্রণ আর কতগুলো টিকিয়া হবে তার হিসাব।</p>
+      <div class="meta"><span>পিস সংখ্যা</span><span>প্রিন্ট</span></div>
+      <span class="go">খুলুন ←</span>
+    </a>
+  </main>
+
+  <h3 class="sec">ব্যবহারের টিপস</h3>
+  <div class="tips">
+    <div class="tip"><b>📱 ফোনে সেভ</b>আপনার দেওয়া পরিমাণ ও দাম এই ফোনের ব্রাউজারে মনে থাকে।</div>
+    <div class="tip"><b>📤 কপি ও শেয়ার</b>প্রতি পেজ থেকে তালিকা কপি করে হোয়াটসঅ্যাপে পাঠানো যায়।</div>
+    <div class="tip"><b>🖨️ প্রিন্ট</b>প্রিন্ট দিলে মেনু ও বাটন বাদ গিয়ে শুধু তালিকা ছাপা হয়।</div>
+  </div>
+
+  <div id="siteFoot">কিছুক্ষণ আপ্যায়ন — রেসিপি ম্যানেজমেন্ট</div>
+</div>
+<script src="assets/site.js"></script>
+</body>
+</html>

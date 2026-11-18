@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ফুচকা ও ভেলপুরি ভর্তা রেসিপি ক্যালকুলেটর</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap');
+
+:root{
+  --brand:#d35400; --brand-dark:#a84300; --soft:#fff3e0; --head:#f8c291;
+  --bg:#f4f4f9; --card:#fff; --text:#2d2d2d; --muted:#777; --line:#e3e3e3; --ok:#27ae60;
+}
+*{box-sizing:border-box}
+body{
+  font-family:'Tiro Bangla',serif;
+  background:var(--bg); color:var(--text); margin:0; padding:16px;
+  display:flex; justify-content:center;
+}
+.container{
+  background:var(--card); padding:24px; border-radius:14px;
+  box-shadow:0 4px 14px rgba(0,0,0,.1); max-width:680px; width:100%;
+}
+h1,h2{text-align:center;color:var(--brand);margin:0 0 16px}
+h1{font-size:1.5em}
+h2{font-size:1.25em}
+
+.input-group{margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.input-group label{font-weight:600;font-size:1.05em}
+.input-group input,.input-group select{
+  padding:10px;font-size:1.05em;border:1px solid #ccc;border-radius:8px;font-family:inherit;background:#fff
+}
+.input-group input{flex:1;min-width:90px}
+.quick{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.chip{
+  border:1px solid var(--brand);background:#fff;color:var(--brand);padding:6px 14px;
+  border-radius:999px;font-family:inherit;font-size:.95em;cursor:pointer
+}
+.chip:hover,.chip.active{background:var(--brand);color:#fff}
+
+table{width:100%;border-collapse:collapse;margin-bottom:14px}
+th,td{border:1px solid var(--line);padding:10px;text-align:left}
+th{background:var(--head)}
+td.num,th.num{text-align:right;white-space:nowrap}
+tr.group td{background:var(--soft);font-weight:700;color:var(--brand-dark)}
+tr.total td{background:#e8f8ee;font-weight:700}
+
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.btn{
+  flex:1;min-width:120px;border:none;background:var(--brand);color:#fff;padding:10px 12px;
+  border-radius:8px;font-family:inherit;font-size:1em;cursor:pointer
+}
+.btn:hover{background:var(--brand-dark)}
+.btn.alt{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+.btn.alt:hover{background:var(--soft)}
+.btn.wa{background:#25d366}
+.toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;
+  padding:10px 18px;border-radius:8px;opacity:0;pointer-events:none;transition:.3s;z-index:9
+}
+.toast.show{opacity:1}
+
+details{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:20px;background:#fafafa}
+summary{cursor:pointer;font-weight:600;color:var(--brand-dark)}
+details p.hint{color:var(--muted);font-size:.9em;margin:8px 0}
+details input{width:90px;padding:6px;border:1px solid #ccc;border-radius:6px;font-family:inherit;font-size:1em;text-align:right}
+.plates{margin-top:10px}
+
+.timers{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.timer{border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center}
+.timer b{display:block;margin-bottom:4px}
+.timer .time{font-size:1.6em;font-weight:700;color:var(--brand);margin:4px 0 8px;font-variant-numeric:tabular-nums}
+.timer.done .time{color:var(--ok)}
+.timer button{padding:6px 12px;border-radius:6px;border:1px solid var(--brand);background:#fff;color:var(--brand);font-family:inherit;cursor:pointer;margin:0 2px}
+
+.recipe-steps{background:var(--soft);padding:16px 18px;border-radius:8px;border-left:5px solid var(--brand)}
+.recipe-steps p{line-height:1.65;margin:0 0 10px;display:flex;gap:10px;align-items:flex-start}
+.recipe-steps input[type=checkbox]{margin-top:6px;transform:scale(1.25);accent-color:var(--brand);flex-shrink:0}
+.recipe-steps p.checked span{color:#999;text-decoration:line-through}
+.tip{background:#fff;border:1px dashed var(--brand);border-radius:8px;padding:10px 12px;margin-top:12px;font-size:.95em}
+
+@media(max-width:520px){
+  body{padding:8px}.container{padding:14px}
+  th,td{padding:8px;font-size:.95em}
+  .timers{grid-template-columns:1fr}
+}
+@media print{
+  body{background:#fff;padding:0}.container{box-shadow:none;max-width:100%}
+  .actions,.quick,.timers,details,.input-group select,.toast{display:none!important}
+  .input-group input{border:none;font-weight:700}
+}
+</style>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<div class="container">
+  <h1>ফুচকা ও ভেলপুরি ভর্তা রেসিপি ক্যালকুলেটর</h1>
+
+  <div class="input-group">
+    <label for="dalAmount">মূল উপাদান (ডাবলি ডাল):</label>
+    <input type="text" inputmode="decimal" id="dalAmount" value="1" autocomplete="off">
+    <select id="unitSelect">
+      <option value="kg">কেজি</option>
+      <option value="gram">গ্রাম</option>
+    </select>
+  </div>
+  <div class="quick" id="quick"></div>
+
+  <table>
+    <thead><tr><th>উপাদান</th><th class="num">পরিমাণ</th><th class="num" id="costHead">খরচ</th></tr></thead>
+    <tbody id="ingredientBody"></tbody>
+  </table>
+
+  <div class="actions">
+    <button class="btn" id="copyBtn">📋 তালিকা কপি</button>
+    <button class="btn wa" id="waBtn">💬 হোয়াটসঅ্যাপ</button>
+    <button class="btn alt" id="printBtn">🖨️ প্রিন্ট</button>
+  </div>
+
+  <details>
+    <summary>⚙️ সেটিংস: অনুপাত ও দাম (আপনার দোকানের মতো বদলান)</summary>
+    <p class="hint">অনুপাত = ১ কেজি ডালের জন্য কত লাগবে। দাম = প্রতি কেজির দাম (টাকা)। পানির জন্য দাম লাগবে না। পরিবর্তন নিজে থেকেই এই ফোনে/ব্রাউজারে সেভ থাকবে।</p>
+    <table id="settingsTable">
+      <thead><tr><th>উপাদান</th><th class="num">অনুপাত</th><th class="num">দাম/কেজি (৳)</th></tr></thead>
+      <tbody id="settingsBody"></tbody>
+    </table>
+    <div class="input-group plates">
+      <label for="plateCount">মোট কত প্লেট বিক্রি করবেন?</label>
+      <input type="text" inputmode="numeric" id="plateCount" placeholder="যেমন ৮০">
+    </div>
+    <button class="btn alt" id="resetBtn" style="width:100%">🔄 ডিফল্টে ফিরে যান</button>
+  </details>
+
+  <div class="timers">
+    <div class="timer" id="t1">
+      <b>ডাল ভেজানো</b>
+      <div class="time">০৬:০০:০০</div>
+      <button data-act="start">শুরু</button><button data-act="reset">রিসেট</button>
+    </div>
+    <div class="timer" id="t2">
+      <b>ডাল সিদ্ধ</b>
+      <div class="time">৩০:০০</div>
+      <button data-act="start">শুরু</button><button data-act="reset">রিসেট</button>
+    </div>
+  </div>
+
+  <div class="recipe-steps" id="steps">
+    <h2>প্রস্তুত প্রণালী</h2>
+    <p><input type="checkbox"><span>১. <strong>ভিজানো:</strong> ডালগুলো পরিষ্কার পানিতে ৬ থেকে ৭ ঘণ্টা ভিজিয়ে রাখুন।</span></p>
+    <p><input type="checkbox"><span>২. <strong>সিদ্ধ করা:</strong> ডাল ভালোভাবে ধুয়ে একটি পাত্রে পানি দিয়ে চুলায় বসান। ৬-৭ মিনিট পর পানি গরম হয়ে গেলে সামান্য খাবার সোডা দিয়ে দিন। ঢাকনা দিয়ে ঢেকে প্রায় ৩০ মিনিট সিদ্ধ করুন। সিদ্ধ হওয়ার সময় কোনোভাবেই কাঠের বা অন্য চামচ দিয়ে ডাল ভাঙা যাবে না।</span></p>
+    <p><input type="checkbox"><span>৩. <strong>ম্যাশ করা:</strong> ডাল ভালোভাবে সিদ্ধ হয়ে গেলে নামিয়ে ফ্যানের নিচে ঠান্ডা করুন। এরপর খুব ভালোভাবে ডালগুলো ম্যাশ করে নিন।</span></p>
+    <p><input type="checkbox"><span>৪. <strong>মশলা মেশানো:</strong> ম্যাশ করা ডালের সাথে কাঁচা মরিচ কুচি, ধনে পাতা কুচি, স্পেশাল ১৪ আইটেমের মশলা, সাদা লবণ, বিট লবণ এবং ব্লেন্ড করা শুকনা মরিচের গুঁড়া দিয়ে ভালোভাবে মাখিয়ে নিন। (এই পর্যায়ে আগে থেকে শসা বা পেঁয়াজ কুচি মেশাবেন না, এতে ভর্তা নষ্ট হয়ে যেতে পারে)।</span></p>
+    <p><input type="checkbox"><span>৫. <strong>পরিবেশন:</strong> কাস্টমারকে দেওয়ার আগে ভেলপুরি বা ফুচকার ভর্তার সাথে শসা কুচি, পেঁয়াজ কুচি, ধনে পাতা এবং পরিমাণমতো তেঁতুলের ঘন টক দিয়ে পরিবেশন করুন।</span></p>
+    <div class="tip">💡 শসা ও পেঁয়াজ সবসময় পরিবেশনের ঠিক আগে মেশান, আর বিক্রির পরিমাণ বুঝে ভর্তা অল্প অল্প করে বানান, তাহলে স্বাদ ও মান ঠিক থাকবে।</div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const BASE_DAL = 1000; // গ্রাম
+const STORE_KEY = 'fuchka-vorta-v2';
+
+const GROUPS = {
+  boil:  'সিদ্ধ করার জন্য',
+  mix:   'ভর্তা মাখানোর জন্য',
+  serve: 'পরিবেশনের জন্য'
+};
+
+// ratio = ১ কেজি (১০০০ গ্রাম) ডালের জন্য; price = প্রতি কেজির দাম (৳)
+const DEFAULTS = {
+  dal:             { group:'boil',  name:'ডাবলি ডাল',                        ratio:1000, unit:'g',  price:0, fixed:true },
+  water:           { group:'boil',  name:'পানি',                              ratio:3000, unit:'ml', price:0 },
+  soda:            { group:'boil',  name:'খাবার সোডা',                        ratio:5,    unit:'g',  price:0 },
+  greenChili:      { group:'mix',   name:'কাঁচা মরিচ কুচি',                   ratio:50,   unit:'g',  price:0 },
+  coriander:       { group:'mix',   name:'ধনে পাতা কুচি',                     ratio:30,   unit:'g',  price:0 },
+  specialMasala:   { group:'mix',   name:'স্পেশাল মশলা (১৪ আইটেম)',           ratio:50,   unit:'g',  price:0 },
+  whiteSalt:       { group:'mix',   name:'সাদা লবণ',                          ratio:20,   unit:'g',  price:0 },
+  blackSalt:       { group:'mix',   name:'বিট লবণ',                           ratio:10,   unit:'g',  price:0 },
+  chiliPowder:     { group:'mix',   name:'শুকনা মরিচের গুঁড়া',               ratio:15,   unit:'g',  price:0 },
+  servingCucumber: { group:'serve', name:'শসা কুচি',                          ratio:300,  unit:'g',  price:0 },
+  servingOnion:    { group:'serve', name:'পেঁয়াজ কুচি',                      ratio:150,  unit:'g',  price:0 },
+  servingCoriander:{ group:'serve', name:'ধনে পাতা কুচি',                     ratio:20,   unit:'g',  price:0 },
+  tamarindSauce:   { group:'serve', name:'তেঁতুলের ঘন টক',                    ratio:0,    unit:'none', price:0 }
+};
+
+let state = load();
+
+function load(){
+  const s = JSON.parse(JSON.stringify(DEFAULTS));
+  try{
+    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
+    for(const k in saved){ if(s[k]){ if(!s[k].fixed && typeof saved[k].ratio==='number') s[k].ratio = saved[k].ratio;
+      if(typeof saved[k].price==='number') s[k].price = saved[k].price; } }
+  }catch(e){}
+  return s;
+}
+function save(){
+  try{
+    const out = {};
+    for(const k in state) out[k] = { ratio: state[k].ratio, price: state[k].price };
+    localStorage.setItem(STORE_KEY, JSON.stringify(out));
+  }catch(e){}
+}
+
+// ---------- বাংলা সংখ্যা ----------
+const BN = '০১২৩৪৫৬৭৮৯';
+const toBn = s => String(s).replace(/[0-9]/g, d => BN[d]);
+const toEn = s => String(s).replace(/[০-৯]/g, d => BN.indexOf(d)).replace(/[,،]/g,'.').replace(/।/g,'');
+const parseNum = v => parseFloat(toEn(v).trim());
+function fmt(n, dec=1){
+  let r = Number(n.toFixed(dec));
+  return toBn(r.toString());
+}
+
+// ---------- হিসাব ----------
+const dalInput  = document.getElementById('dalAmount');
+const unitSel   = document.getElementById('unitSelect');
+const tbody     = document.getElementById('ingredientBody');
+const plateInp  = document.getElementById('plateCount');
+
+function dalGrams(){
+  const a = parseNum(dalInput.value);
+  if(isNaN(a) || a <= 0) return null;
+  return unitSel.value === 'kg' ? a*1000 : a;
+}
+
+function amountText(item, qty){
+  if(item.unit === 'none') return 'পরিমাণমতো';
+  if(item.unit === 'ml'){
+    return qty >= 1000 ? fmt(qty/1000,2)+' লিটার' : fmt(Math.round(qty),0)+' মি.লি.';
+  }
+  if(qty >= 1000) return fmt(qty/1000,2)+' কেজি';
+  return (qty < 10 ? fmt(qty,1) : fmt(Math.round(qty),0)) + ' গ্রাম';
+}
+
+function compute(){
+  const g = dalGrams();
+  if(g === null) return null;
+  const mult = g / BASE_DAL;
+  const rows = [];
+  let total = 0;
+  for(const key in state){
+    const it = state[key];
+    const qty = key==='dal' ? g : it.ratio * mult;
+    const cost = (it.unit==='g') ? qty/1000 * it.price : 0;
+    total += cost;
+    rows.push({key, it, qty, cost});
+  }
+  return {rows, total, g};
+}
+
+function render(){
+  const res = compute();
+  if(!res){ return; }
+  const hasPrice = res.rows.some(r => r.cost > 0);
+  document.getElementById('costHead').style.display = hasPrice ? '' : 'none';
+  let html = '', lastGroup = '';
+  for(const r of res.rows){
+    if(r.it.group !== lastGroup){
+      lastGroup = r.it.group;
+      html += `<tr class="group"><td colspan="${hasPrice?3:2}">${GROUPS[lastGroup]}</td></tr>`;
+    }
+    html += `<tr><td>${r.it.name}</td><td class="num">${amountText(r.it, r.qty)}</td>` +
+            (hasPrice ? `<td class="num">${r.cost>0 ? '৳ '+fmt(r.cost,0) : '—'}</td>` : '') + `</tr>`;
+  }
+  if(hasPrice){
+    html += `<tr class="total"><td colspan="2">মোট খরচ</td><td class="num">৳ ${fmt(res.total,0)}</td></tr>`;
+    const plates = parseNum(plateInp.value);
+    if(!isNaN(plates) && plates > 0){
+      html += `<tr class="total"><td colspan="2">প্রতি প্লেটে খরচ (${fmt(plates,0)} প্লেট)</td><td class="num">৳ ${fmt(res.total/plates,2)}</td></tr>`;
+    }
+  }
+  tbody.innerHTML = html;
+  syncQuick();
+}
+
+// ---------- দ্রুত বাটন ----------
+const QUICKS = [ {t:'৫০০ গ্রাম', g:500}, {t:'১ কেজি', g:1000}, {t:'২ কেজি', g:2000}, {t:'৫ কেজি', g:5000}, {t:'১০ কেজি', g:10000} ];
+const quickBox = document.getElementById('quick');
+QUICKS.forEach(q=>{
+  const b = document.createElement('button');
+  b.className='chip'; b.textContent=q.t; b.dataset.g=q.g;
+  b.onclick=()=>{
+    if(q.g>=1000){ unitSel.value='kg'; dalInput.value = toBn(q.g/1000); }
+    else { unitSel.value='gram'; dalInput.value = toBn(q.g); }
+    render();
+  };
+  quickBox.appendChild(b);
+});
+function syncQuick(){
+  const g = dalGrams();
+  quickBox.querySelectorAll('.chip').forEach(b=>b.classList.toggle('active', g!==null && Number(b.dataset.g)===g));
+}
+
+// ---------- সেটিংস টেবিল ----------
+function renderSettings(){
+  let html='';
+  for(const key in state){
+    const it = state[key];
+    if(it.unit==='none') continue;
+    const ratioCell = it.fixed ? `<span>${toBn(it.ratio)}</span>` :
+      `<input type="text" inputmode="decimal" data-k="${key}" data-f="ratio" value="${toBn(it.ratio)}"> ${it.unit==='ml'?'মি.লি.':'গ্রাম'}`;
+    const priceCell = it.unit==='ml' ? '—' :
+      `<input type="text" inputmode="decimal" data-k="${key}" data-f="price" value="${it.price?toBn(it.price):''}" placeholder="০">`;
+    html += `<tr><td>${it.name}</td><td class="num">${ratioCell}</td><td class="num">${priceCell}</td></tr>`;
+  }
+  document.getElementById('settingsBody').innerHTML = html;
+}
+document.getElementById('settingsBody').addEventListener('input', e=>{
+  const k = e.target.dataset.k, f = e.target.dataset.f;
+  if(!k) return;
+  let v = parseNum(e.target.value);
+  if(isNaN(v) || v < 0) v = 0;
+  state[k][f] = v;
+  save(); render();
+});
+document.getElementById('resetBtn').onclick = ()=>{
+  if(!confirm('সব অনুপাত ও দাম ডিফল্টে ফিরে যাবে। নিশ্চিত?')) return;
+  try{ localStorage.removeItem(STORE_KEY); }catch(e){}
+  state = load(); renderSettings(); render(); toast('ডিফল্টে ফিরে গেছে');
+};
+
+// ---------- কপি / শেয়ার / প্রিন্ট ----------
+function listText(){
+  const res = compute();
+  if(!res) return '';
+  let t = `ফুচকা/ভেলপুরি ভর্তা — ডাল ${amountText({unit:'g'}, res.g)}\n`;
+  let last='';
+  for(const r of res.rows){
+    if(r.it.group!==last){ last=r.it.group; t += `\n[${GROUPS[last]}]\n`; }
+    t += `• ${r.it.name}: ${amountText(r.it, r.qty)}\n`;
+  }
+  if(res.total>0) t += `\nমোট খরচ: ৳ ${fmt(res.total,0)}`;
+  return t.trim();
+}
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 1800);
+}
+document.getElementById('copyBtn').onclick = async ()=>{
+  const t = listText();
+  if(!t){ toast('আগে ডালের সঠিক পরিমাণ দিন'); return; }
+  try{ await navigator.clipboard.writeText(t); }
+  catch(e){
+    const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); ta.remove();
+  }
+  toast('তালিকা কপি হয়েছে ✔');
+};
+document.getElementById('waBtn').onclick = ()=>{
+  const t = listText();
+  if(!t){ toast('আগে ডালের সঠিক পরিমাণ দিন'); return; }
+  window.open('https://wa.me/?text='+encodeURIComponent(t), '_blank');
+};
+document.getElementById('printBtn').onclick = ()=>window.print();
+
+// ---------- ধাপ চেকবক্স ----------
+document.getElementById('steps').addEventListener('change', e=>{
+  if(e.target.type==='checkbox') e.target.parentElement.classList.toggle('checked', e.target.checked);
+});
+
+// ---------- টাইমার ----------
+function beep(){
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    [0,0.4,0.8].forEach(d=>{
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.connect(g); g.connect(ctx.destination); o.frequency.value=880;
+      g.gain.setValueAtTime(0.3, ctx.currentTime+d);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+d+0.3);
+      o.start(ctx.currentTime+d); o.stop(ctx.currentTime+d+0.3);
+    });
+  }catch(e){}
+  if(navigator.vibrate) navigator.vibrate([300,150,300]);
+}
+function makeTimer(id, seconds, withHours){
+  const box = document.getElementById(id), disp = box.querySelector('.time');
+  const startBtn = box.querySelector('[data-act=start]');
+  let left = seconds, end = null, iv = null;
+  const show = s=>{
+    const h=Math.floor(s/3600), m=Math.floor(s%3600/60), sec=s%60, p=n=>String(n).padStart(2,'0');
+    disp.textContent = toBn(withHours ? `${p(h)}:${p(m)}:${p(sec)}` : `${p(Math.floor(s/60))}:${p(sec)}`);
+  };
+  const stop = ()=>{ clearInterval(iv); iv=null; startBtn.textContent='শুরু'; };
+  startBtn.onclick = ()=>{
+    if(iv){ left = Math.max(0, Math.round((end-Date.now())/1000)); stop(); return; }
+    if(left<=0) left = seconds;
+    box.classList.remove('done');
+    end = Date.now() + left*1000;
+    startBtn.textContent='থামান';
+    iv = setInterval(()=>{
+      left = Math.max(0, Math.round((end-Date.now())/1000));
+      show(left);
+      if(left<=0){ stop(); box.classList.add('done'); beep(); toast('⏰ সময় শেষ!'); }
+    }, 500);
+  };
+  box.querySelector('[data-act=reset]').onclick = ()=>{ stop(); left=seconds; box.classList.remove('done'); show(left); };
+  show(left);
+}
+makeTimer('t1', 6*3600, true);
+makeTimer('t2', 30*60, false);
+
+// ---------- ইনপুট ইভেন্ট ----------
+dalInput.addEventListener('input', render);
+unitSel.addEventListener('change', render);
+plateInp.addEventListener('input', render);
+dalInput.addEventListener('blur', ()=>{ if(dalGrams()===null) dalInput.value = toBn(1); render(); });
+
+renderSettings();
+render();
+</script>
+<script src="assets/site.js"></script>
+</body>
+</html>
